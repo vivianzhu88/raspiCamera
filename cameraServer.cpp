@@ -156,7 +156,6 @@ int main()
             output =  to_string(imageSize.width) + to_string(imageSize.height) + ":" +
                     to_string(imageSize.width * imageSize.height * 3) + "?";
             cout << "Frame Number: " << frameNumber++ << " " << text  << currImg.size().width <<currImg.size().height <<endl;
-            send(new_socket , output.c_str() , output.length() , 0 );
             send(new_socket, currImg.data, imageSize.width * imageSize.height * 3, 0);
         }
     }
