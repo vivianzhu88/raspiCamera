@@ -41,7 +41,7 @@ int main(int argc, char const *argv[])
     serv_addr.sin_port = htons(PORT); 
        
     // Convert IPv4 and IPv6 addresses from text to binary form 
-    if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)  
+    if(inet_pton(AF_INET, "10.0.0.25", &serv_addr.sin_addr)<=0)  
     { 
         printf("\nInvalid address/ Address not supported \n"); 
         return -1; 
@@ -62,21 +62,23 @@ int main(int argc, char const *argv[])
     int buff2pos = 0;
     int frameCount =0;
     struct timeval currFrameTime,lastFrameTime;
+    clock_t startTime=clock(), currTime=clock();
     while(waitKey(1) != 'q')
     {
-        
+        startTime = clock();
         while(buff1pos < dataLen)
         {
             valread = read( sock , buffer1.data + buff1pos, dataLen - buff1pos);
             buff1pos += valread;
         }
+        currTime = clock();
         imshow("Sample", buffer1);
 
         gettimeofday(&currFrameTime, NULL);
         long int ms =(currFrameTime.tv_sec * 1000 + currFrameTime.tv_usec / 1000) - (lastFrameTime.tv_sec * 1000 + lastFrameTime.tv_usec / 1000) ;
         lastFrameTime = currFrameTime;   
-        text = to_string((float)(1000.0/ ms))+  " time stamp: " + to_string(currFrameTime.tv_usec/ 1000.0);
-        cout << text << " current frame: " << frameCount++ << endl;
+        text = "Proc time: "+ to_string((float)(currTime - startTime) /CLOCKS_PER_SEC) + " FPS: " + to_string((float)(1000.0/ ms));
+        cout <<"Frame Number : " << frameCount++  << " " << text<< endl;
 
         buff1pos =0;
     }
