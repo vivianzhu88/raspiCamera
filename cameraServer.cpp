@@ -118,34 +118,6 @@ int main()
             if(currImg.empty())
                 break;
 
-            //calc size of image needed to draw text
-            tBoxBorderSize = getTextSize(text,tBoxFont,tBoxFontScale, tBoxBorderThickness, &tBoxBaseline);
-            
-            //release memory 
-            textForground.release();
-            textAlpha.release();
-            
-            //allocate images based on text settings
-            textForground = Mat(tBoxBorderSize.height +tBoxBaseline, tBoxBorderSize.width,CV_8UC3,textColor);
-            textAlpha = Mat(tBoxBorderSize.height+tBoxBaseline, tBoxBorderSize.width,CV_8UC1,Scalar(0));
-            
-            //draw text onto alpha layer
-            putText(textAlpha, text, Point(0,textAlpha.size().height-tBoxBaseline), tBoxFont, tBoxFontScale, Scalar(255), tBoxBorderThickness);
-
-
-            //check that the text is in frame so the bitwise ops don't crash
-            if(tBoxPosX +textAlpha.size().width > currImg.size().width ||tBoxPosY+ textAlpha.size().height > currImg.size().height)
-            {
-                cout << "[WARNING] Text goes out of frame" <<endl;
-            }
-                   
-            else
-            {
-                image_roi = currImg(Rect(tBoxPosX, tBoxPosY, textAlpha.size().width, textAlpha.size().height));
-                bitwise_and(image_roi, Scalar(0), image_roi, textAlpha);
-                bitwise_or(image_roi, textForground, image_roi,textAlpha);
-            }
-
             //log the cpu clock after alloc and draw
             currTime = clock();
 
