@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 #include <string.h> 
 #include <unistd.h>
-
+#include <sys/time.h>
 #include "opencv2/core.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
@@ -41,7 +41,7 @@ int main(int argc, char const *argv[])
     serv_addr.sin_port = htons(PORT); 
        
     // Convert IPv4 and IPv6 addresses from text to binary form 
-    if(inet_pton(AF_INET, "10.0.0.25", &serv_addr.sin_addr)<=0)  
+    if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)  
     { 
         printf("\nInvalid address/ Address not supported \n"); 
         return -1; 
@@ -54,26 +54,31 @@ int main(int argc, char const *argv[])
     } 
     printf("Connected to server!"); 
 
-    string descriptor;
+    string descriptor, text;
     const int dataLen = 640*480*3;
-    Mat buffer1;
+    Mat buffer1(480,640,CV_8UC3);
     Mat buffer2(480,640,CV_8UC3);
     int buff1pos = 0;
     int buff2pos = 0;
-    while(waitKey(10) != 'q')
+    int frameCount =0;
+    struct timeval currFrameTime,lastFrameTime;
+    while(waitKey(1) != 'q')
     {
-        buffer1 = Mat(480,640,CV_8UC3);
+        
         while(buff1pos < dataLen)
         {
             valread = read( sock , buffer1.data + buff1pos, dataLen - buff1pos);
             buff1pos += valread;
-            cout << "loading... "<<endl;
         }
-        cout << "img full" <<endl;
         imshow("Sample", buffer1);
-        buff1pos =0;
-        buffer1.release();
 
+        gettimeofday(&currFrameTime, NULL);
+        long int ms =(currFrameTime.tv_sec * 1000 + currFrameTime.tv_usec / 1000) - (lastFrameTime.tv_sec * 1000 + lastFrameTime.tv_usec / 1000) ;
+        lastFrameTime = currFrameTime;   
+        text = to_string((float)(1000.0/ ms))+  " time stamp: " + to_string(currFrameTime.tv_usec/ 1000.0);
+        cout << text << " current frame: " << frameCount++ << endl;
+
+        buff1pos =0;
     }
      
     return 0; 

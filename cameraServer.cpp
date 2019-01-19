@@ -107,7 +107,7 @@ int main()
             gettimeofday(&currFrameTime, NULL);
             //calculate timing data
             long int ms =(currFrameTime.tv_sec * 1000 + currFrameTime.tv_usec / 1000) - (lastFrameTime.tv_sec * 1000 + lastFrameTime.tv_usec / 1000) ;
-            text =   "Proc time: "+ to_string((float)(currTime - startTime) /CLOCKS_PER_SEC) + " FPS: " + to_string((float)(1000.0/ ms));
+            text =   "Proc time: "+ to_string((float)(currTime - startTime) /CLOCKS_PER_SEC) + " FPS: " + to_string((float)(1000.0/ ms)) + " time stamp: " +to_string(currFrameTime.tv_usec/ 1000.0);
             lastFrameTime = currFrameTime;
 
             //log the cpu clock to see how long the alloc and draw takes
@@ -128,7 +128,20 @@ int main()
             output =  to_string(imageSize.width) + to_string(imageSize.height) + ":" +
                     to_string(imageSize.width * imageSize.height * 3) + "?";
             cout << "Frame Number: " << frameNumber++ << " " << text  << currImg.size().width <<currImg.size().height <<endl;
-            send(new_socket, currImg.data, imageSize.width * imageSize.height * 3, 0);
+            int datalen = imageSize.width * imageSize.height * 3, currPos = 0;
+            int packetSize = imageSize.width;
+            int currPacket; 
+            while(currPos < datalen)
+            {
+                if(currPos + packetSize > datalen)
+                    currPacket = datalen - currPos;
+                else
+                    currPacket = packetSize;
+            
+                send(new_socket, currImg.data + currPos, currPacket, 0);
+                currPos += currPacket;
+            }
+
         }
     }
 
