@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <thread>
 
 #include <unistd.h> 
 #include <stdio.h> 
@@ -19,6 +20,47 @@
 #define BUFFER_SIZE 3*800*600
 using namespace cv;
 using namespace std;
+
+void bCastThread(void)
+{
+      int sock;                         /* Socket */
+    struct sockaddr_in broadcastAddr; /* Broadcast address */
+    char *broadcastIP;                /* IP broadcast address */
+    char *sendString;                 /* String to broadcast */
+    int broadcastPermission = 1;          /* Socket opt to set permission to broadcast */
+    unsigned int sendStringLen;       /* Length of string to broadcast */
+
+    cout << "bcast thread start" << endl;
+    if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) 
+    { 
+        perror("UDP socket failed"); 
+        exit(EXIT_FAILURE); 
+    } 
+    if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST, (void *) &broadcastPermission, sizeof(broadcastPermission)) < 0) 
+    { 
+        perror("Could not set UDP permissions"); 
+        exit(EXIT_FAILURE); 
+    } 
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &broadcastPermission, sizeof(broadcastPermission)) < 0) 
+    { 
+        perror("Could not reuse UDP port"); 
+        exit(EXIT_FAILURE); 
+    } 
+    
+
+    memset(&broadcastAddr, 0, sizeof(broadcastAddr));   /* Zero out structure */
+    broadcastAddr.sin_family = AF_INET;                 /* Internet address family */
+    broadcastAddr.sin_addr.s_addr = INADDR_ANY;/* Broadcast IP address */
+    broadcastAddr.sin_port = htons(BCAST_PORT);         /* Broadcast port */
+    cout << "Starting beacon" << endl;
+    while(1)
+    {
+        sendto(sock, "Host", 4, 0, (struct sockaddr *)&broadcastAddr, sizeof(broadcastAddr));
+        
+        sleep(3);
+        
+    }
+}
 
 int main()
 {
@@ -53,7 +95,8 @@ int main()
         textAlpha,        //text draw layer
         image_roi;        //roi of output image
 
-
+    //bcast thread 
+    thread threadHolder (bCastThread);
 
 
      // Creating socket file descriptor 
