@@ -15,6 +15,7 @@
 #include <netinet/in.h> 
 
 #define PORT 8888 
+#define BCAST_PORT 9999
 #define BUFFER_SIZE 3*800*600
 using namespace cv;
 using namespace std;
@@ -27,7 +28,7 @@ int main()
     int opt = 1; 
     int addrlen = sizeof(address); 
     char buffer[BUFFER_SIZE] = {0}; 
-    const char *hello = "Hello from server"; 
+    const char *hello = "Hello from server";     
 
     //text settings
     string text = "Test String";
@@ -72,12 +73,8 @@ int main()
     address.sin_addr.s_addr = INADDR_ANY; 
     address.sin_port = htons( PORT ); 
 
-    if (bind(server_fd, (struct sockaddr *)&address,  
-                                 sizeof(address))<0) 
-    { 
-        perror("bind failed"); 
-        exit(EXIT_FAILURE); 
-    } 
+    bind(server_fd, (struct sockaddr *)&address,sizeof(address)); 
+ 
     if (listen(server_fd, 3) < 0) 
     { 
         perror("listen"); 
