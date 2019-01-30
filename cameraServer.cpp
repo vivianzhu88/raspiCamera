@@ -50,14 +50,14 @@ void bCastThread(void)
 
     memset(&broadcastAddr, 0, sizeof(broadcastAddr));   /* Zero out structure */
     broadcastAddr.sin_family = AF_INET;                 /* Internet address family */
-    broadcastAddr.sin_addr.s_addr = INADDR_ANY;/* Broadcast IP address */
+    broadcastAddr.sin_addr.s_addr = INADDR_BROADCAST;/* Broadcast IP address */
     broadcastAddr.sin_port = htons(BCAST_PORT);         /* Broadcast port */
     cout << "Starting beacon" << endl;
     while(1)
     {
         sendto(sock, "Host", 4, 0, (struct sockaddr *)&broadcastAddr, sizeof(broadcastAddr));
         
-        sleep(3);
+        sleep(2);
         
     }
 }
