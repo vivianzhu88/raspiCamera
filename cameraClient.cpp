@@ -34,18 +34,56 @@ int main(int argc, char const *argv[])
         printf("\n Socket creation error \n"); 
         return -1; 
     } 
-   
+
+    //udp vars
+    int bCastSock = 0;
+    int srcaddrSize;
+    struct sockaddr_in localUdp; 
+    struct sockaddr_in bCastRecv;
+    socklen_t addrlen = sizeof(struct sockaddr_in); 
+    char  *buffHolder; 
+    char *hostIpString;
+    const int bCastPort = 9999;
+
+    //setup udp sock
+    if ((bCastSock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) 
+    { 
+        perror("UDP socket failed"); 
+        exit(EXIT_FAILURE); 
+    } 
+    if (setsockopt(bCastSock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &srcaddrSize, sizeof(srcaddrSize))) 
+    { 
+        perror("setsockopt"); 
+        exit(EXIT_FAILURE); 
+    } 
+    memset(&localUdp, '0', sizeof(serv_addr)); 
+    localUdp.sin_family = AF_INET; 
+    localUdp.sin_addr.s_addr = INADDR_ANY;
+    localUdp.sin_port = htons( bCastPort ); 
+
+    bind(bCastSock, (struct sockaddr *)&localUdp,sizeof(localUdp)); 
+    //wait for beacon from server
+    do{
+        cout << "Waiting for broadcast..." <<endl;
+        memset(&bCastRecv, '0', sizeof(bCastRecv));
+        recvfrom(bCastSock, buffer, MAX_BUFF, 0, (struct sockaddr *) &bCastRecv, &addrlen);
+    }while(strcmp("Host", buffer));
+
+    hostIpString = inet_ntoa(bCastRecv.sin_addr);
+
+   //setup and connect to tcp sock
     memset(&serv_addr, '0', sizeof(serv_addr)); 
    
     serv_addr.sin_family = AF_INET; 
     serv_addr.sin_port = htons(PORT); 
        
     // Convert IPv4 and IPv6 addresses from text to binary form 
-    if(inet_pton(AF_INET, "10.0.0.25", &serv_addr.sin_addr)<=0)  
+    if(inet_pton(AF_INET, hostIpString, &serv_addr.sin_addr)<=0)  
     { 
         printf("\nInvalid address/ Address not supported \n"); 
         return -1; 
     } 
+    cout << "connecting to ip: " << hostIpString << endl;
    
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
     { 
